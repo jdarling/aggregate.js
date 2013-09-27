@@ -37,6 +37,23 @@
         text-align:center;
         padding: 0 1em;
     }
+    h1, h2, h3{
+        color: #333;
+        display: block;
+        margin: 0 1em;
+      }
+    h1{
+        border-bottom: 1px solid #999;
+      }
+    h1 a{
+        color: #333;
+        text-decoration: none;
+        display: block;
+      }
+    h1 a:hover{
+        text-decoration:underline
+      }
+
     button:hover {
         background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #63b8ee), color-stop(1, #63b8ee) );
         background:-moz-linear-gradient( center top, #63b8ee 5%, #63b8ee 100% );
@@ -48,11 +65,15 @@
         top:1px;
     }
     p{
-      padding: 1em 1em 0em 1em; border: 0; margin: 0;
+      margin: 1em 1em 0em 1em; border: 0;
+      border: 1px solid #666;
+      background: #EEE;
+      padding: 2px;
     }
     </style>
   </head>
   <body style="width: 100%; height: 100%; padding: 0; border: 0; margin: 0">
+    <h1><a href="https://github.com/jdarling/aggregate.js">Aggregate.js Pipeline Script example</a></h1>
     <p>This is a quick and dirty sandbox environment for playing with Pipeline Scripts.  You can enter your raw script and data on the page and see the output easily once you click the "Run" button at the bottom left.  View the source code to see how it works.</p>
     <div style="width: 48%; float: left; padding-left: 1%">
       <h3>Pipeline Script</h3>
@@ -131,6 +152,7 @@ toArray()</textarea>
       btnRun.onclick = function(){
         var source = edScript.value;
         var records = JSON.parse(edData.value);
+        edLog.innerHTML = '';
         try{
           var response = Aggregate.executePipeline(source, records, null, {
             logger: logger

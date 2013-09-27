@@ -46,6 +46,9 @@ There are quite a bit of improvements that can be put into place when it come to
 Options
 =======
 
+* disableLogger - Turns off the log function
+* logger - A custom logger function
+
 Methods
 =======
 
@@ -201,3 +204,71 @@ executePipeline(source, records, variables, options)
 Helper method to call compilePipeline and then execute the resulting program immediately.
 
 See [examples/pipeline.html](https://rawgithub.com/jdarling/aggregate.js/master/examples/pipeline.html) for more details.
+
+Pipeline Scripts
+================
+
+Pipeline Scripts are DSL's (Domain Specific Language) that are used to create Pipeline Programs that can later be executed.  The scripts can contain variables (using {{varname}}) within them that will be filled in when the program is run from the variables argument when the Pipeline Program is executed.  This way if you want to have some type of data entry or options form that is used when to provide values to your pipelines you don't have to rebuild them each time.
+
+An example might be something as simple as:
+```
+pick("$.date > new Date({{startDate}})
+```
+
+Then you compile the script with:
+```
+var pipeline = Aggregate.compilePipeline(myScript)
+```
+
+And execute it with:
+```
+var today = new Date(); // Get the current date
+today.setHours(0, 0, 0, 0); // Set it to midnight
+pipeline(myArray, {date: today})
+```
+
+This would return the items from myArray with a date greater than today at midnight.
+
+When you run a Pipeline Program it returns the last state of the program when it completed.  If the state is an Aggregate instance you will get back that instance, if the state is an Array you will get the Array, if it is a Number (say from Count) then you get the count.
+
+Pipelines can also perform basic interactions with an Array once converted.  These actions must fit into the DSL of Pipeline Scripts.  An example is below:
+
+```
+var script =
+    "pick(\"$>4 && $<9\")"+ // Get items with values between 5 and 8
+    "log()"+ // Log it for fun
+    "toArray()"+ // Conver the pipeline to a JavaScript Array
+    "slice(1,3)" // Call the standard JavaScript slice method
+    ;
+var program = Aggregate.compilePipeline(script);
+var result = program([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+console.log(result);
+```
+
+The output would be:
+```
+[6,7]
+```
+
+You can see this in action in the Pipeline Demo application ([examples/pipeline.html](https://rawgithub.com/jdarling/aggregate.js/master/examples/pipeline.html)) if you set the script to:
+```
+pick("$>4 && $<9")
+log()
+toArray()
+slice(1, 3)
+```
+
+And then set the data to:
+```
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+```
+
+Finally click run and the output (as expected) window will read:
+```
+Picked
+[5,6,7,8]
+typeof(response)
+"object"
+Output from pipeline:
+[6,7]
+```
