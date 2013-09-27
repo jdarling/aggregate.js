@@ -1,0 +1,9 @@
+{
+  "name": "aggregate.js",
+  "version": "0.0.1",
+  "main": "aggregate.js",
+  "ignore": [
+    ".jshintrc",
+    "**/*.txt"
+  ]
+}

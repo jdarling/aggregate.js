@@ -1,0 +1,160 @@
+<html>
+  <head>
+    <script type="text/javascript" src="../aggregate.js"></script>
+    <style>
+      textarea{
+        margin: 0;
+        padding: 0;
+        border: 1px solid black;
+      }
+      button {
+        background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #468ccf), color-stop(1, #468ccf) );
+        background:-moz-linear-gradient( center top, #468ccf 5%, #468ccf 100% );
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#468ccf', endColorstr='#468ccf');
+        background-color:#468ccf;
+        -webkit-border-top-left-radius:0px;
+        -moz-border-radius-topleft:0px;
+        border-top-left-radius:0px;
+        -webkit-border-top-right-radius:0px;
+        -moz-border-radius-topright:0px;
+        border-top-right-radius:0px;
+        -webkit-border-bottom-right-radius:0px;
+        -moz-border-radius-bottomright:0px;
+        border-bottom-right-radius:0px;
+        -webkit-border-bottom-left-radius:0px;
+        -moz-border-radius-bottomleft:0px;
+        border-bottom-left-radius:0px;
+        text-indent:0;
+        border:1px solid #000000;
+        display:inline-block;
+        color:#000000;
+        font-family:Arial;
+        font-size:15px;
+        font-weight:bold;
+        font-style:normal;
+        line-height:25px;
+        text-decoration:none;
+        text-align:center;
+        padding: 0 1em;
+    }
+    button:hover {
+        background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #63b8ee), color-stop(1, #63b8ee) );
+        background:-moz-linear-gradient( center top, #63b8ee 5%, #63b8ee 100% );
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#63b8ee', endColorstr='#63b8ee');
+        background-color:#63b8ee;
+    }
+    button:active {
+        position:relative;
+        top:1px;
+    }
+    p{
+      padding: 1em 1em 0em 1em; border: 0; margin: 0;
+    }
+    </style>
+  </head>
+  <body style="width: 100%; height: 100%; padding: 0; border: 0; margin: 0">
+    <p>This is a quick and dirty sandbox environment for playing with Pipeline Scripts.  You can enter your raw script and data on the page and see the output easily once you click the "Run" button at the bottom left.  View the source code to see how it works.</p>
+    <div style="width: 48%; float: left; padding-left: 1%">
+      <h3>Pipeline Script</h3>
+      <textarea id="script" style="width: 100%; height: 500px">
+// Line Comments are supported
+/* Block Comments are also supported*/
+
+// Turn all normal numbers into objects with a val property that contains the number
+select("$ => {val: $}")
+
+// Output the transformed values
+log("selected")
+// Using the new .val property on each object sort the records
+sort("a, b => b.val - a.val")
+log("sorted")
+
+// Get only unique .val records
+distinct("$.val")
+log("distinct")
+
+// Execute a map/reduce operation to classify everything as even or odd
+mapReduce(
+  "{key: $.val % 2?'odd':'even', value: [$.val]}",
+  "key, curr, next => curr.concat(next)"
+)
+log("mapReduced")
+
+// rename value key output from reduce to values
+select("{key: $.key, values: $.value}")
+log("selected")
+
+// Unwind all of the values arrays creating a lot of new records
+unwind("values")
+log("unwound")
+
+// Add str as a new property
+select("{key: $.key, value: $.values, str: \"Some String\"}")
+log("selected")
+
+// Convert back from objects to numeric array of numbers
+select("$ => $.value")
+log("selected")
+
+// Pull 4 or 5 records (middle -2 to middle +2) depending on array size from the middle
+mid("Math.max(0, (this.length / 2) - 2)", "Math.min(this.length-1, (this.length / 2) + 2)")
+log("mid")
+
+// Only use even numbers
+pick("!($ % 2)")
+log("Final")
+
+// And convert it over to an array in the end
+toArray()</textarea>
+    </div>
+    <div style="width: 48%; float: right; padding-right: 1%">
+      <h3>Data</h3>
+      <textarea id="data" style="width: 100%; height: 100px">[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</textarea>
+      <h3>Output</h3>
+      <div id="log" style="width: 100%; height: 340px; border: 1px solid gray; overflow: auto;"></div>
+    </div>
+    <div style="clear: both; padding: 0em 1%; border: 0; margin: 0"><button id="run">Run</button></div>
+    <script type="text/javascript">
+      var  logger = function(action, stack){
+          var output = JSON.stringify(arguments.length>1?stack:action);
+          edLog.innerHTML += arguments.length>1?'<h3>'+action+'</h3><pre>'+output+'</pre>':'<pre>'+output+'</pre>';
+          edLog.scrollTop = edLog.scrollHeight;
+        };
+      var getElem = function(id){
+        return document.getElementById(id);
+      };
+      var edLog = getElem('log');
+      var edScript = getElem('script');
+      var edData = getElem('data');
+      var btnRun =getElem('run');
+      log.innerHTML = '';
+      btnRun.onclick = function(){
+        var source = edScript.value;
+        var records = JSON.parse(edData.value);
+        try{
+          var response = Aggregate.executePipeline(source, records, null, {
+            logger: logger
+          });
+          logger('typeof(response)', typeof(response));
+          if(typeof(response)==='object' && !(response instanceof Array)){
+            logger('Number records from pipeline: ', response.count());
+            logger('Object returned from pipeline: ', response.toArray());
+          }else{
+            logger('Output from pipeline: ', response);
+          }
+        }catch(e){
+          logger('ERROR: ', e.message);
+        }
+        return false;
+      };
+      var sizeControls = function(){
+        //var w = window.innerWidth, h = window.innerHeight, hw = Math.floor(w * 0.48);
+        var h = window.innerHeight;
+        edScript.style.height = h - edScript.offsetTop - btnRun.clientHeight - 20;
+        edLog.style.height = h - edLog.offsetTop - btnRun.clientHeight - 20;
+      };
+      window.onresize = sizeControls;
+      sizeControls();
+    </script>
+  </body>
+</html>
