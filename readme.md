@@ -193,11 +193,11 @@ compilePipeline(source)
 
 Take a Pipeline Script (see [examples/pipeline.html](https://github.com/jdarling/aggregate.js/blob/master/examples/pipeline.html)) and compile it for use later.  Returns a Function that takes three parameters; records, optional variables object, and an optional options object.
 
-See [examples/pipeline.html](http://htmlpreview.github.io/?https://github.com/jdarling/aggregate.js/blob/master/examples/pipeline.html) for more details.
+See [examples/pipeline.html](https://rawgithub.com/jdarling/aggregate.js/master/examples/pipeline.html) for more details.
 
 executePipeline(source, records, variables, options)
 ----------------------------------------------------
 
 Helper method to call compilePipeline and then execute the resulting program immediately.
 
-See [examples/pipeline.html](http://htmlpreview.github.io/?https://github.com/jdarling/aggregate.js/blob/master/examples/pipeline.html) for more details.
+See [examples/pipeline.html](https://rawgithub.com/jdarling/aggregate.js/master/examples/pipeline.html) for more details.
