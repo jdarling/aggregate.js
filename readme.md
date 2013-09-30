@@ -229,6 +229,8 @@ pipeline(myArray, {date: today})
 
 This would return the items from myArray with a date greater than today at midnight.
 
+A note on variables, variable names are the first contiguous set of characters and numbers that do not contain a space.  Anything after the first space is ignored.  This way you can use them for things like building custom filters from the variable declarations.  See [examples/dynamicOptions.html](https://rawgithub.com/jdarling/aggregate.js/master/examples/dynamicOptions.html) for an example.
+
 When you run a Pipeline Program it returns the last state of the program when it completed.  If the state is an Aggregate instance you will get back that instance, if the state is an Array you will get the Array, if it is a Number (say from Count) then you get the count.
 
 Pipelines can also perform basic interactions with an Array once converted.  These actions must fit into the DSL of Pipeline Scripts.  An example is below:

@@ -1,6 +1,6 @@
 {
   "name": "aggregate.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Aggregate.js is a small and simple framework for aggregating, reducing, transforming JavaScript Array's.  It works in Node.js or in the Browser equally well.",
   "main": "aggregate.js",
   "directories": {

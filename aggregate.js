@@ -59,7 +59,7 @@
     //pipeline, variables
   };
 
-  Aggregate.prototype.lambda = (function(){
+  Aggregate.prototype.lambda = Aggregate.lambda = (function(){
     var stringType = typeof('');
     var undefinedType = (function(undefined){
       return typeof(undefined);
@@ -409,7 +409,7 @@
       };
       var matchCommand = function(){
         var command, args;
-        command = matchSymbol();
+        command = matchSymbol().split(' ').shift();
         args = matchArgumentList();
         return {
           command: command,
@@ -428,27 +428,32 @@
 
   Aggregate.compilePipeline = function(source){
     return (function(ast){
-      var getVal = function(sym){
+      var getVal = function(sym, variables){
         var path = sym.split('.'), part, value = variables;
-        while(path.length && value){
+        while(path.length && (value !== void 0)){
           part = path.shift();
           value = value[part];
+        }
+        if(path.length && !value){
+          throw new Error('Requested variable could not be found: '+sym);
         }
         switch(typeof(value)){
           case('object'):
             return JSON.stringify(value);
-          case('string'):
+/*
+  case('string'):
             return '\\"'+value+'\\"';
+*/
           default:
             return value;
         }
       };
-      var processArgs = function(src){
+      var processArgs = function(src, variables){
         var args = (src||[]).slice(), i, l=args.length;
         for(i=0; i<l; i++){
           if(typeof(args[i])==='string'){
             args[i] = args[i].replace(/{{(.*?)}}/g, function(full, sym){
-              var val = getVal(sym);
+              var val = getVal(sym.split(/\s/).shift(), variables);
               return val;
             });
           }
@@ -460,7 +465,7 @@
         var step, i, l = ast.length;
         for(i=0; i<l; i++){
           step = ast[i];
-          agg = agg[step.command].apply(agg, processArgs(step.args));
+          agg = agg[step.command].apply(agg, processArgs(step.args, variables));
         }
         return agg;
       };

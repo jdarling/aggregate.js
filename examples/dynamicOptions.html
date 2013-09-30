@@ -1,0 +1,202 @@
+<html>
+  <head>
+    <script type="text/javascript" src="../aggregate.js"></script>
+    <style>
+      textarea{
+        margin: 0;
+        padding: 0;
+        border: 1px solid black;
+      }
+      button {
+        background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #468ccf), color-stop(1, #468ccf) );
+        background:-moz-linear-gradient( center top, #468ccf 5%, #468ccf 100% );
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#468ccf', endColorstr='#468ccf');
+        background-color:#468ccf;
+        -webkit-border-top-left-radius:0px;
+        -moz-border-radius-topleft:0px;
+        border-top-left-radius:0px;
+        -webkit-border-top-right-radius:0px;
+        -moz-border-radius-topright:0px;
+        border-top-right-radius:0px;
+        -webkit-border-bottom-right-radius:0px;
+        -moz-border-radius-bottomright:0px;
+        border-bottom-right-radius:0px;
+        -webkit-border-bottom-left-radius:0px;
+        -moz-border-radius-bottomleft:0px;
+        border-bottom-left-radius:0px;
+        text-indent:0;
+        border:1px solid #000000;
+        display:inline-block;
+        color:#000000;
+        font-family:Arial;
+        font-size:15px;
+        font-weight:bold;
+        font-style:normal;
+        line-height:25px;
+        text-decoration:none;
+        text-align:center;
+        padding: 0 1em;
+    }
+    h1, h2, h3{
+        color: #333;
+        display: block;
+        margin: 0 1em;
+      }
+    h1{
+        border-bottom: 1px solid #999;
+      }
+    h1 a{
+        color: #333;
+        text-decoration: none;
+        display: block;
+      }
+    h1 a:hover{
+        text-decoration:underline
+      }
+
+    button:hover {
+        background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #63b8ee), color-stop(1, #63b8ee) );
+        background:-moz-linear-gradient( center top, #63b8ee 5%, #63b8ee 100% );
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#63b8ee', endColorstr='#63b8ee');
+        background-color:#63b8ee;
+    }
+    button:active {
+        position:relative;
+        top:1px;
+    }
+    p{
+      margin: 1em 1em 0em 1em; border: 0;
+      border: 1px solid #666;
+      background: #EEE;
+      padding: 2px;
+    }
+    input{
+        width: 100%;
+    }
+    </style>
+  </head>
+  <body style="width: 100%; height: 100%; padding: 0; border: 0; margin: 0">
+    <h1><a href="https://github.com/jdarling/aggregate.js">Aggregate.js Pipeline Script example</a></h1>
+    <p>This is a quick and dirty sandbox environment for playing with Pipeline Scripts and basic variables.  Click "Get Options" to populate the options form, fill in the values for each option, and then click "Run" to see the output.  View the source code to see how it works.</p>
+    <div style="width: 48%; float: left; padding-left: 1%">
+      <h3>Pipeline Script</h3>
+      <textarea id="script" style="width: 100%; height: 500px">
+log("Initial")
+// Only use numbers greater than min
+pick("$ > {{min Minimum Value}}")
+// Only use numbers smaller than max
+pick("$ < {{max Maximum Value}}")
+distinct()
+
+// And convert it over to an array in the end
+toArray()</textarea>
+    </div>
+    <div style="width: 48%; float: right; padding-right: 1%">
+      <h3>Data</h3>
+      <textarea id="data" style="width: 100%; height: 100px">[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</textarea>
+      <h3>Options</h3>
+      <form id="options" style="width: 100%; height: 100px; border: 1px solid gray; overflow: auto;">
+      </form>
+      <h3>Output</h3>
+      <div id="log" style="width: 100%; height: 340px; border: 1px solid gray; overflow: auto;"></div>
+    </div>
+    <div style="clear: both; padding: 0em 1%; border: 0; margin: 0"><button id="getOpts">Get Options</button><button id="run">Run</button></div>
+    <script type="text/javascript">
+      var  logger = function(action, stack){
+          var output = JSON.stringify(arguments.length>1?stack:action);
+          edLog.innerHTML += arguments.length>1?'<h3>'+action+'</h3><pre>'+output.replace(/\\n/g, '<br>')+'</pre>':'<pre>'+output.replace(/\\n/g, '<br>')+'</pre>';
+          edLog.scrollTop = edLog.scrollHeight;
+        };
+      var getElem = function(id){
+        return document.getElementById(id);
+      };
+      var edLog = getElem('log');
+      var edScript = getElem('script');
+      var edData = getElem('data');
+      var frmOptions = getElem('options');
+      var btnRun =getElem('run');
+      var btnGetOptions =getElem('getOpts');
+      var varNames = [];
+      btnRun.style.display = 'none';
+      log.innerHTML = '';
+      edScript.onchange = edScript.onblur = edScript.onkeyup = function(){
+        btnRun.style.display = 'none';
+        return false;
+      }
+      btnGetOptions.onclick = function(){
+        var source = edScript.value;
+        var html = '', options = [];
+        var reGetOptions = /{{(.*?)}}/g;
+        var i, l;
+        var sym, lbl, opt;
+        varNames = [];
+        while(sym = reGetOptions.exec(source)){
+          options.push(sym[1]);
+        }
+        l = options.length
+        frmOptions.innerHTML = '';
+        for(i=0; i<l; i++){
+          opt = options[i].split(' ');
+          sym = opt.shift();
+          lbl = opt.join(' ');
+          html += '<label>';
+          html += lbl;
+          html += '<input type="text" id="'+sym+'" />';
+          html += '</label>';
+          varNames.push(sym);
+        }
+        frmOptions.innerHTML = html;
+        btnRun.style.display = '';
+      };
+      btnRun.onclick = function(){
+        var source = edScript.value;
+        var records = JSON.parse(edData.value);
+        var variables = {}, i, l=varNames.length, id;
+        function isNumeric(n) {
+          return !isNaN(parseFloat(n)) && isFinite(n);
+        }
+        for(i=0; i<l; i++){
+          id = varNames[i];
+          console.log(id, document.getElementById(id), document.getElementById(id).value);
+          variables[id] = document.getElementById(id).value;
+          if(!variables[id]){
+            document.getElementById(id).focus();
+            alert(id+' is required');
+            return;
+          }
+          if(isNumeric(variables[id])){
+            variables[id] = +variables[id];
+          }
+        }
+        edLog.innerHTML = '';
+        try{
+          console.log(variables);
+          var response = Aggregate.executePipeline(source, records, variables, {
+            logger: logger
+          });
+          logger('typeof(response)', typeof(response));
+          if(typeof(response)==='object' && !(response instanceof Array)){
+            logger('Number records from pipeline: ', response.count());
+            logger('Object returned from pipeline: ', response.toArray());
+          }else{
+            logger('Output from pipeline: ', response);
+          }
+        }catch(e){
+          logger('ERROR: ', e.message);
+          if(e.stack){
+            logger(e.stack);
+          }
+        }
+        return false;
+      };
+      var sizeControls = function(){
+        //var w = window.innerWidth, h = window.innerHeight, hw = Math.floor(w * 0.48);
+        var h = window.innerHeight;
+        edScript.style.height = h - edScript.offsetTop - btnRun.clientHeight - 20;
+        edLog.style.height = h - edLog.offsetTop - btnRun.clientHeight - 20;
+      };
+      window.onresize = sizeControls;
+      sizeControls();
+    </script>
+  </body>
+</html>

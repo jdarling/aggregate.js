@@ -1,6 +1,6 @@
 {
   "name": "aggregate.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "aggregate.js",
   "ignore": [
     ".jshintrc",
