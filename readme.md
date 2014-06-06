@@ -1,5 +1,7 @@
-Aggregate.js - prototype 1
+Aggregate.js - prototype 2
 ==========================
+
+This documentation is not up to date to the latest changes.
 
 Aggregate.js is a small and simple framework for aggregating, reducing, transforming JavaScript Array's.  It works in Node.js or in the Browser equally well.
 
